@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>✨ 心愿进化树 ✨</title>
     <style>
+        /* 核心修复：确保内边距不撑破容器 */
         * { box-sizing: border-box; }
+
         body { 
             text-align: center; 
             background: #ffffff; 
@@ -18,11 +20,12 @@
             transition: background-color 2s ease; 
         }
         
-        h1 { margin-top: 20px; font-size: 32px; color: #333; transition: opacity 0.3s; }
-        .sub-title { font-size: 18px; color: #555; font-weight: normal; margin-top: -10px; margin-bottom: 10px; transition: opacity 0.3s; }
-        .tips { color: #888; font-size: 14px; margin-bottom: 20px; transition: all 0.3s ease; }
+        h1 { margin-top: 20px; font-size: 28px; color: #333; transition: opacity 0.3s; padding: 0 10px; }
+        .sub-title { font-size: 16px; color: #555; font-weight: normal; margin-top: -10px; margin-bottom: 10px; transition: opacity 0.3s; }
+        .tips { color: #888; font-size: 13px; margin-bottom: 10px; transition: all 0.3s ease; padding: 0 15px; }
 
-        .support-container { margin-bottom: 20px; }
+        /* 主页支持按钮容器 */
+        .support-container { margin-bottom: 20px; transition: opacity 0.3s; }
         .mini-support-btn {
             display: inline-flex;
             align-items: center;
@@ -65,30 +68,31 @@
         }
         .nav-btn.secondary { background: #FF9800; }
 
-        /* 爱发电风格按钮 */
+        /* 爱发电紫色风格按钮优化 */
         .afdian-btn {
-            background: #8a2be2;
-            color: white;
+            background: #946ce6;
+            color: white !important;
             border: none;
-            padding: 12px 20px;
+            padding: 12px 15px;
             border-radius: 10px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
-            margin: 15px 0;
+            margin: 10px 0;
             width: 100%;
-            display: inline-block;
+            display: block;
             text-decoration: none;
-            transition: background 0.3s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(148, 108, 230, 0.2);
         }
-        .afdian-btn:hover { background: #7a1fd1; }
+        .afdian-btn:hover { background: #7b53cf; transform: translateY(-1px); }
 
         .stats-board {
             display: flex;
             justify-content: center;
-            gap: 30px;
+            gap: 20px;
             margin: 10px auto;
-            padding: 10px 20px;
+            padding: 10px 15px;
             background: rgba(253, 253, 253, 0.8);
             border-radius: 12px;
             width: fit-content;
@@ -98,8 +102,8 @@
         }
 
         .stat-item { display: flex; flex-direction: column; align-items: center; }
-        .stat-value { font-size: 20px; font-weight: bold; color: #333; }
-        .stat-label { font-size: 12px; color: #999; margin-top: 2px; }
+        .stat-value { font-size: 18px; font-weight: bold; color: #333; }
+        .stat-label { font-size: 11px; color: #999; margin-top: 2px; }
 
         #tree-container {
             position: relative;
@@ -175,13 +179,13 @@
             left: 50% !important;
             width: 85vw !important; 
             height: 85vw !important;
-            max-width: 550px;
-            max-height: 550px;
+            max-width: 500px;
+            max-height: 500px;
             z-index: 1000;
             transform: translate(-50%, -50%);
         }
 
-        .item.full-screen .wish-content { font-size: clamp(18px, 5vw, 28px); opacity: 1; }
+        .item.full-screen .wish-content { font-size: clamp(18px, 5vw, 24px); opacity: 1; }
         .item.full-screen .interaction-bar { opacity: 1; pointer-events: auto; }
 
         #overlay {
@@ -200,27 +204,30 @@
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             background: white;
-            padding: 25px;
+            padding: 20px;
             border-radius: 20px;
             box-shadow: 0 15px 50px rgba(0,0,0,0.15);
             z-index: 2000;
-            width: 320px;
+            width: 85%;
+            max-width: 320px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         input, select { 
-            width: 100%; padding: 12px; margin: 10px 0; 
+            width: 100%; padding: 12px; margin: 8px 0; 
             border: 1px solid #eee; border-radius: 10px; 
-            box-sizing: border-box; font-size: 16px; outline: none;
+            font-size: 16px; outline: none;
         }
         
-        button { 
+        .btn-main { 
             width: 100%; padding: 12px; border: none; 
             border-radius: 10px; cursor: pointer; 
             font-weight: bold; font-size: 16px;
         }
 
-        .pay-hint { font-size: 13px; color: #666; margin: 15px 0; line-height: 1.6; }
-        .passcode-display { font-size: 20px; letter-spacing: 2px; color: #FF9800; font-weight: bold; margin: 10px 0; }
+        .pay-hint { font-size: 12px; color: #666; margin: 8px 0; line-height: 1.5; }
+        .passcode-display { font-size: 22px; letter-spacing: 1px; color: #FF9800; font-weight: bold; margin: 10px 0; background: #fff8e1; padding: 8px; border-radius: 10px; }
         .disclaimer { font-size: 10px; color: #bbb; margin: 20px auto; max-width: 600px; padding: 0 20px; }
         
         .loading-overlay {
@@ -241,7 +248,7 @@
 
     <div class="nav-bar">
         <button class="nav-btn" onclick="openWishModal()">我要许愿</button>
-        <button class="nav-btn secondary" onclick="openRedeemModal()">还愿/找回心愿</button>
+        <button class="nav-btn secondary" onclick="openRedeemModal()">找回心愿</button>
     </div>
 
     <h1>✨ 心愿进化树 ✨</h1>
@@ -258,7 +265,14 @@
         </div>
     </div>
 
-    <p id="main-tips" class="tips">🍃 小小心愿5元 | 🌸 至诚锦愿10元 | 先播种后支持，自愿原则</p>
+    <p id="main-tips" class="tips">🍃 小小心愿 5元 | 🌸 至诚锦愿 10元 | 先播种后支持，全凭自愿</p>
+    
+    <!-- 补全：主页支持按钮 -->
+    <div class="support-container">
+        <a href="https://afdian.com/a/star2moon" target="_blank" class="mini-support-btn">
+            💜 支持开发者
+        </a>
+    </div>
 
     <div id="tree-container">
         <img src="tree.png" id="bg-tree">
@@ -269,41 +283,39 @@
         <h3>许下你的愿望</h3>
         <input type="text" id="wishText" placeholder="写下你的愿望吧...">
         <select id="wishType">
-            <option value="green_leaf">🍃 小小心愿 (支持5元 - 绿叶)</option>
-            <option value="flower">🌸 至诚锦愿 (支持10元 - 鲜花)</option>
+            <option value="green_leaf">🍃 小小心愿 (支持 5 元 - 绿叶)</option>
+            <option value="flower">🌸 至诚锦愿 (支持 10 元 - 鲜花)</option>
         </select>
-        <button class="btn-pay" onclick="confirmWishAndShowPay()" style="background: #4CAF50; color: white;">立即播种</button>
-        <button class="btn-cancel" onclick="closeModal()" style="background: #f5f5f5; color: #999; margin-top: 8px;">取消</button>
+        <button class="btn-main" onclick="confirmWishAndShowPay()" style="background: #4CAF50; color: white;">立即播种</button>
+        <button class="btn-main" onclick="closeModal()" style="background: #f5f5f5; color: #999; margin-top: 8px;">取消</button>
     </div>
 
     <div id="successModal" class="modal">
-        <h3 style="color: #4CAF50;">播种成功 ✨</h3>
-        <p class="pay-hint">您的心愿已挂在树上。请务必保存提取码：</p>
+        <h3 style="color: #4CAF50; margin-top: 0;">播种成功 ✨</h3>
+        <p class="pay-hint">心愿已挂在树上。请务必保存提取码：</p>
         <div class="passcode-display" id="displayPasscode">--------</div>
         
-        <div style="padding: 15px; background: #f9f9f9; border-radius: 10px; margin-top: 10px;">
-            <p style="font-size: 11px; color: #888; margin-bottom: 5px;">[ 欢迎支持开发者维护本项目 ]</p>
-            <!-- 在下方引号内填入你的爱发电主页 URL -->
-            <a href="https://afdian.com/a/star2moon" target="_blank" class="afdian-btn">前往爱发电支持我</a>
-            <p style="font-size: 10px; color: #aaa;">开发者 GitHub: liuyilei8969</p>
+        <div style="padding: 12px; background: #fdfdfd; border: 1px solid #f0f0f0; border-radius: 12px; margin-top: 5px;">
+            <p style="font-size: 11px; color: #888; margin-bottom: 5px;">[ 随喜支持开发者 ]</p>
+            <a href="https://afdian.com/a/star2moon" target="_blank" class="afdian-btn">前往爱发电支持</a>
+            <p style="font-size: 10px; color: #aaa;">GitHub: liuyilei8969</p>
         </div>
         
-        <p class="pay-hint" style="font-size: 11px;">我们坚持“先播种、后支持”的原则。<br>您的支持将用于服务器续费及后续开发。</p>
-        <button class="btn-pay" onclick="closeAll()" style="background: #4CAF50; color: white;">好的</button>
+        <p class="pay-hint" style="font-size: 11px; margin-top: 10px;">我们坚持“先播种、后支持”原则。<br>您的支持将用于服务器维护。</p>
+        <button class="btn-main" onclick="closeAll()" style="background: #4CAF50; color: white;">好的，记下了</button>
     </div>
 
     <div id="redeemModal" class="modal">
         <h3>找回我的心愿</h3>
-        <input type="text" id="redeemCode" maxlength="8" placeholder="输入提取码" style="text-transform: uppercase;">
-        <button class="btn-pay" onclick="handleRedeem()" style="background: #FF9800; color: white;">开始查找</button>
-        <button class="btn-cancel" onclick="closeModal()" style="background: #f5f5f5; color: #999; margin-top: 8px;">取消</button>
+        <input type="text" id="redeemCode" maxlength="8" placeholder="输入8位提取码" style="text-transform: uppercase;">
+        <button class="btn-main" onclick="handleRedeem()" style="background: #FF9800; color: white;">开始查找</button>
+        <button class="btn-main" onclick="closeModal()" style="background: #f5f5f5; color: #999; margin-top: 8px;">取消</button>
     </div>
 
     <div class="disclaimer">
-        * 免责声明：本网站仅为个人技术互动实验项目。心愿播种与打赏均属自愿赠与行为。
+        * 免责声明：本网站仅为个人技术互动实验项目。
     </div>
 
-    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -396,7 +408,7 @@
                 <div class="interaction-bar">
                     <div class="action-btn like-btn">❤️ <span class="count">${data.likes || 0}</span></div>
                     <div class="action-btn bless-btn">✨ <span class="count">${data.blessings || 0}</span></div>
-                    <div class="action-btn" style="color:#f44336;" onclick="window.handleCancelWish('${id}', '${data.passcode}', event)">🗑️ 移除</div>
+                    <div class="action-btn" style="color:#f44336;" onclick="window.handleCancelWish('${id}', '${data.passcode}', event)">🗑️</div>
                 </div>
             `;
             div.querySelector('.like-btn').onclick = (e) => {
@@ -456,12 +468,12 @@
                 window.closeModal();
                 found.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 window.openFullScreen(found);
-            } else alert("未找到该提取码。");
+            } else alert("未找到该心愿。");
         };
 
         window.handleCancelWish = async (id, correctCode, e) => {
             e.stopPropagation();
-            const input = prompt("请输入提取码以移除：");
+            const input = prompt("请输入提取码以移除此心愿：");
             if(input && input.toUpperCase() === correctCode) {
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'wishes', id));
                 window.closeAll();
@@ -486,6 +498,9 @@
             subTitle.style.opacity = '0';
             document.querySelector('.stats-board').style.opacity = '0';
             mainTips.style.opacity = '0';
+            // 确保按钮在全屏时隐藏
+            const supportBtn = document.querySelector('.support-container');
+            if (supportBtn) supportBtn.style.opacity = '0';
             document.body.style.overflow = 'hidden';
         };
 
@@ -497,6 +512,9 @@
             subTitle.style.opacity = '1';
             document.querySelector('.stats-board').style.opacity = '1';
             mainTips.style.opacity = '1';
+            // 确保按钮在关闭全屏时重新显示
+            const supportBtn = document.querySelector('.support-container');
+            if (supportBtn) supportBtn.style.opacity = '1';
             document.body.style.overflow = 'auto';
         };
 
@@ -508,8 +526,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
