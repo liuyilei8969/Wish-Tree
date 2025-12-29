@@ -57,9 +57,10 @@
             text-shadow: 0 0 5px #ffffff, 0 0 10px #ffffff, 0 0 15px #ffffff, 0 0 20px #ffffff;
         }
 
+        /* 优化：调低了互动条的位置，以适应更大的按钮 */
         .interaction-bar {
-            position: absolute; bottom: -60px; left: 50%; transform: translateX(-50%);
-            display: flex; gap: 10px; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            position: absolute; bottom: -100px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 15px; opacity: 0; pointer-events: none; transition: opacity 0.3s;
         }
 
         .item.full-screen {
@@ -177,7 +178,6 @@
         const db = getFirestore(app);
         let user = null, unsubscribe = null, curX, curY;
         
-        // 核心修复：追踪当前活跃（全屏）的心愿 ID
         let activeWishId = null;
 
         onAuthStateChanged(auth, (u) => {
@@ -214,19 +214,19 @@
                 div.id = d.id;
                 div.className = `item ${isL ? 'size-large' : 'size-small'}`;
                 
-                // 核心修复：重绘时如果 ID 匹配，则自动恢复全屏状态
                 if (d.id === activeWishId) {
                     div.classList.add('full-screen');
                 }
                 
                 div.style.left = data.x + '%'; div.style.top = data.y + '%';
+                // 优化：显著增大了按钮的内边距 (padding) 和字号 (font-size)
                 div.innerHTML = `
                     <img src="${data.type}.png" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22><circle cx=%2210%22 cy=%2210%22 r=%228%22 fill=%22green%22/></svg>'">
                     <div class="wish-content">${data.text}</div>
                     <div class="interaction-bar">
-                        <div class="nav-btn" style="padding:4px 8px; font-size:10px" onclick="window.updateWishCount('${d.id}', 'likes', ${data.likes||0}, event)">❤️ ${data.likes||0}</div>
-                        <div class="nav-btn" style="padding:4px 8px; font-size:10px; background:#4bb7ff" onclick="window.updateWishCount('${d.id}', 'blessings', ${data.blessings||0}, event)">✨ ${data.blessings||0}</div>
-                        <div class="nav-btn" style="padding:4px 8px; font-size:10px; background:#f44336" onclick="window.handleCancelWish('${d.id}', '${data.passcode}', event)">🗑️</div>
+                        <div class="nav-btn" style="padding:12px 24px; font-size:18px" onclick="window.updateWishCount('${d.id}', 'likes', ${data.likes||0}, event)">❤️ ${data.likes||0}</div>
+                        <div class="nav-btn" style="padding:12px 24px; font-size:18px; background:#4bb7ff" onclick="window.updateWishCount('${d.id}', 'blessings', ${data.blessings||0}, event)">✨ ${data.blessings||0}</div>
+                        <div class="nav-btn" style="padding:12px 24px; font-size:18px; background:#f44336" onclick="window.handleCancelWish('${d.id}', '${data.passcode}', event)">🗑️</div>
                     </div>
                 `;
                 div.onclick = (e) => {
@@ -242,7 +242,6 @@
             updateBackground(total);
         }
 
-        // 统一的数据更新函数
         window.updateWishCount = async (id, field, currentVal, e) => {
             e.stopPropagation();
             try {
@@ -289,7 +288,7 @@
             e.stopPropagation();
             const input = prompt("请输入提取码以移除：");
             if(input?.toUpperCase() === code) {
-                activeWishId = null; // 移除前先清除活跃 ID
+                activeWishId = null; 
                 await deleteDoc(doc(db, 'artifacts', 'wish-tree-default', 'public', 'data', 'wishes', id));
                 window.closeAll();
             } else if (input) alert("提取码错误");
@@ -305,8 +304,8 @@
         };
 
         window.openFullScreen = (el) => { 
-            activeWishId = el.id; // 记录当前全屏的 ID
-            window.closeAll(false); // 传入 false 表示不清除 activeWishId
+            activeWishId = el.id; 
+            window.closeAll(false); 
             document.getElementById('overlay').style.display='block'; 
             el.classList.add('full-screen'); 
             ['h1', '.sub-title', '.stats-board', '.tips', '.support-container'].forEach(s => {
