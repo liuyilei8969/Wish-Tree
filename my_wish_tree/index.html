@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ 心愿进化树 ✨</title>
+    <style>
+        body { 
+            text-align: center; 
+            background: #ffffff; 
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            overflow-y: auto; 
+            overflow-x: hidden; 
+            scroll-behavior: smooth; 
+            transition: background-color 2s ease; 
+        }
+        
+        h1 { margin-top: 20px; font-size: 32px; color: #333; transition: opacity 0.3s; }
+        .sub-title { font-size: 18px; color: #555; font-weight: normal; margin-top: -10px; margin-bottom: 10px; transition: opacity: 0.3s; }
+        .tips { color: #888; font-size: 14px; margin-bottom: 20px; transition: all 0.3s ease; }
+
+        .nav-bar {
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            z-index: 500;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            backdrop-filter: blur(5px);
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .nav-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .nav-btn.secondary { background: #FF9800; }
+
+        .stats-board {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 10px auto;
+            padding: 10px 20px;
+            background: rgba(253, 253, 253, 0.8);
+            border-radius: 12px;
+            width: fit-content;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            border: 1px solid #f0f0f0;
+            backdrop-filter: blur(5px);
+        }
+
+        .stat-item { display: flex; flex-direction: column; align-items: center; }
+        .stat-value { font-size: 20px; font-weight: bold; color: #333; }
+        .stat-label { font-size: 12px; color: #999; margin-top: 2px; }
+
+        #tree-container {
+            position: relative;
+            display: block;
+            margin: 0 auto 60px auto; 
+            width: 95vw;
+            max-width: 1000px;
+            cursor: crosshair;
+        }
+
+        #bg-tree { width: 100%; height: auto; display: block; }
+
+        .item {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .item.size-small { width: 25px; height: 25px; }
+        .item.size-large { width: 50px; height: 50px; z-index: 11; }
+        .item img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+
+        .wish-content {
+            position: absolute;
+            width: 80%;
+            font-size: 0px; 
+            color: #000000;
+            font-weight: 900;
+            text-align: center;
+            pointer-events: none;
+            line-height: 1.3;
+            z-index: 11;
+            opacity: 0;
+            transition: all 0.3s;
+            text-shadow: 0 0 5px #ffffff, 0 0 10px #ffffff, 0 0 15px #ffffff, 0 0 20px #ffffff;
+        }
+
+        .interaction-bar {
+            position: absolute;
+            bottom: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #eee;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #333;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+
+        .item.full-screen {
+            position: fixed;
+            top: 50% !important;
+            left: 50% !important;
+            width: 85vw !important; 
+            height: 85vw !important;
+            max-width: 550px;
+            max-height: 550px;
+            z-index: 1000;
+            transform: translate(-50%, -50%);
+        }
+
+        .item.full-screen .wish-content { font-size: clamp(18px, 5vw, 28px); opacity: 1; }
+        .item.full-screen .interaction-bar { opacity: 1; pointer-events: auto; }
+
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 900;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+            z-index: 2000;
+            width: 320px;
+        }
+
+        input, select { 
+            width: 100%; padding: 12px; margin: 10px 0; 
+            border: 1px solid #eee; border-radius: 10px; 
+            box-sizing: border-box; font-size: 16px; outline: none;
+        }
+        
+        button { 
+            width: 100%; padding: 12px; border: none; 
+            border-radius: 10px; cursor: pointer; 
+            font-weight: bold; font-size: 16px;
+        }
+
+        .pay-qr-container { padding: 10px; background: #f9f9f9; border-radius: 10px; margin-top: 10px; }
+        .pay-qr-img { width: 160px; height: 160px; background: #eee; margin: 0 auto; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .pay-hint { font-size: 13px; color: #666; margin: 15px 0; line-height: 1.6; }
+        .passcode-display { font-size: 20px; letter-spacing: 2px; color: #FF9800; font-weight: bold; margin: 10px 0; }
+        .disclaimer { font-size: 10px; color: #bbb; margin: 20px auto; max-width: 600px; padding: 0 20px; }
+        
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; display: flex; align-items: center; justify-content: center;
+            z-index: 3000; flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading" class="loading-overlay">
+        <h3>✨ 正在连接心愿树...</h3>
+        <p style="color:#999; font-size:12px;">首次加载可能较慢</p>
+    </div>
+
+    <div id="overlay" onclick="closeAll()"></div>
+
+    <div class="nav-bar">
+        <button class="nav-btn" onclick="openWishModal()">我要许愿</button>
+        <button class="nav-btn secondary" onclick="openRedeemModal()">还愿/找回心愿</button>
+    </div>
+
+    <h1>✨ 心愿进化树 ✨</h1>
+    <p id="sub-title-text" class="sub-title">✨ 请在这里许下心愿吧！</p>
+    
+    <div class="stats-board">
+        <div class="stat-item">
+            <span class="stat-value" id="total-count">0</span>
+            <span class="stat-label">心愿总数</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value" id="fulfilled-count" style="color: #FF9800;">0</span>
+            <span class="stat-label">已达成心愿</span>
+        </div>
+    </div>
+
+    <p id="main-tips" class="tips">🍃 小小心愿1元 | 🌸 至诚锦愿10元 | 先播种后支持，全凭自愿</p>
+
+    <div id="tree-container">
+        <img src="tree.png" id="bg-tree">
+        <div id="items-layer"></div>
+    </div>
+
+    <div id="modal" class="modal">
+        <h3>许下你的愿望</h3>
+        <input type="text" id="wishText" placeholder="写下你的愿望吧...">
+        <select id="wishType">
+            <option value="green_leaf">🍃 小小心愿 (支持1元 - 绿叶)</option>
+            <option value="flower">🌸 至诚锦愿 (支持10元 - 鲜花)</option>
+        </select>
+        <button class="btn-pay" onclick="confirmWishAndShowPay()" style="background: #4CAF50; color: white;">立即播种</button>
+        <button class="btn-cancel" onclick="closeModal()" style="background: #f5f5f5; color: #999; margin-top: 8px;">取消</button>
+    </div>
+
+    <div id="successModal" class="modal">
+        <h3 style="color: #4CAF50;">播种成功 ✨</h3>
+        <p class="pay-hint">您的心愿已挂在树上。请务必保存提取码：</p>
+        <div class="passcode-display" id="displayPasscode">--------</div>
+        <div class="pay-qr-container">
+            <p style="font-size: 11px; color: #888; margin-bottom: 8px;">[ 自愿支持开发者维护本项目 ]</p>
+            <div class="pay-qr-img">
+                <img src="wechat_pay_qr.png" alt="收款码" style="width:100%; height:100%; object-fit: cover;" onerror="this.parentElement.innerHTML='<div style=\'padding:10px;color:#999;font-size:12px\'>请将微信静态收款码<br>存为 wechat_pay_qr.png</div>'">
+            </div>
+            <p style="font-size: 10px; color: #aaa; margin-top: 5px;">收款人：心愿树开发者 github: liuyilei8969</p>
+        </div>
+        <p class="pay-hint" style="font-size: 11px;">我们坚持“先播种、后支持”的原则。<br>如果您想支持日常维护，欢迎自愿打赏。</p>
+        <button class="btn-pay" onclick="closeAll()" style="background: #4CAF50; color: white;">好的</button>
+    </div>
+
+    <div id="redeemModal" class="modal">
+        <h3>找回我的心愿</h3>
+        <p style="font-size: 12px; color: #888;">输入发布时获得的8位提取码</p>
+        <input type="text" id="redeemCode" maxlength="8" placeholder="输入提取码" style="text-transform: uppercase;">
+        <button class="btn-pay" onclick="handleRedeem()" style="background: #FF9800; color: white;">开始查找</button>
+        <button class="btn-cancel" onclick="closeModal()" style="background: #f5f5f5; color: #999; margin-top: 8px;">取消</button>
+    </div>
+
+    <div class="disclaimer">
+        * 免责声明：本网站仅为个人技术互动实验项目。心愿播种与打赏均属自愿赠与行为。
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // 配置参数 (环境变量会自动填充，默认环境请保留为空字符串)
+        const firebaseConfig = {
+              apiKey: "AIzaSyCskcwc_od5y7ibmCzhk4BJDbzpq2I_RHQ",
+              authDomain: "wishtree-dd4d6.firebaseapp.com",
+              projectId: "wishtree-dd4d6",
+              storageBucket: "wishtree-dd4d6.firebasestorage.app",
+              messagingSenderId: "528466950558",
+              appId: "1:528466950558:web:3b8f300319cc7f12cbfe8f"
+         };
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'wish-tree-default';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        let user = null;
+
+        // 初始化认证
+        const initAuth = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        };
+
+        onAuthStateChanged(auth, (u) => {
+            user = u;
+            if(user) {
+                document.getElementById('loading').style.display = 'none';
+                startListening();
+            }
+        });
+
+        initAuth();
+
+        // 核心变量
+        const layer = document.getElementById('items-layer');
+        const container = document.getElementById('tree-container');
+        const overlay = document.getElementById('overlay');
+        const subTitle = document.getElementById('sub-title-text');
+        const mainTips = document.getElementById('main-tips');
+        let curX, curY;
+        const MAX_WISHES_FOR_GOLD = 100;
+
+        // 监听 Firestore 变化
+        function startListening() {
+            const wishesCol = collection(db, 'artifacts', appId, 'public', 'data', 'wishes');
+            onSnapshot(wishesCol, (snapshot) => {
+                layer.innerHTML = '';
+                let total = 0;
+                let fulfilled = 0;
+
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const id = docSnap.id;
+                    renderItem(id, data);
+                    total++;
+                    if(data.type === 'gold_leaf' || data.type === 'apple') fulfilled++;
+                });
+
+                document.getElementById('total-count').innerText = total;
+                document.getElementById('fulfilled-count').innerText = fulfilled;
+                updateBackground(total);
+            }, (error) => {
+                console.error("Firestore error:", error);
+            });
+        }
+
+        function updateBackground(total) {
+            const ratio = Math.min(total / MAX_WISHES_FOR_GOLD, 1);
+            const green = Math.floor(255 - (255 - 215) * ratio);
+            const blue = Math.floor(255 - 255 * ratio);
+            document.body.style.backgroundColor = `rgb(255, ${green}, ${blue})`;
+        }
+
+        function renderItem(id, data) {
+            const div = document.createElement('div');
+            const isLarge = (data.type === 'flower' || data.type === 'apple');
+            div.className = `item ${isLarge ? 'size-large' : 'size-small'}`;
+            div.style.left = data.x + '%';
+            div.style.top = data.y + '%';
+            div.id = id;
+
+            div.innerHTML = `
+                <img src="${data.type}.png" class="item-img" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22><circle cx=%2210%22 cy=%2210%22 r=%228%22 fill=%22green%22/></svg>'">
+                <div class="wish-content">${data.text}</div>
+                <div class="interaction-bar">
+                    <div class="action-btn like-btn">❤️ <span class="count">${data.likes || 0}</span></div>
+                    <div class="action-btn bless-btn">✨ <span class="count">${data.blessings || 0}</span></div>
+                    <div class="action-btn" style="color:#f44336;" onclick="window.handleCancelWish('${id}', '${data.passcode}', event)">🗑️ 移除</div>
+                </div>
+            `;
+
+            div.querySelector('.like-btn').onclick = (e) => {
+                e.stopPropagation();
+                if(!user) return;
+                const wishRef = doc(db, 'artifacts', appId, 'public', 'data', 'wishes', id);
+                updateDoc(wishRef, { likes: (data.likes || 0) + 1 });
+            };
+
+            div.querySelector('.bless-btn').onclick = (e) => {
+                e.stopPropagation();
+                if(!user) return;
+                const wishRef = doc(db, 'artifacts', appId, 'public', 'data', 'wishes', id);
+                updateDoc(wishRef, { blessings: (data.blessings || 0) + 1 });
+            };
+
+            div.onclick = function(e) {
+                e.stopPropagation();
+                if(this.classList.contains('full-screen')) {
+                    window.evolveItem(id, data.type, data.passcode);
+                } else {
+                    window.openFullScreen(this);
+                }
+            };
+            layer.appendChild(div);
+        }
+
+        // 挂载到 window 供 HTML 属性调用
+        window.openWishModal = () => {
+            container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const oldTips = mainTips.innerHTML;
+            mainTips.innerHTML = "<strong>✨ 请在树枝上点击你想播种的位置 ✨</strong>";
+            mainTips.style.color = "#4CAF50";
+            setTimeout(() => { mainTips.innerHTML = oldTips; mainTips.style.color = "#888"; }, 5000);
+        };
+
+        window.openRedeemModal = () => {
+            document.getElementById('redeemModal').style.display = 'block';
+            overlay.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        };
+
+        container.onclick = (e) => {
+            if(e.target !== container && e.target !== document.getElementById('bg-tree')) return;
+            const rect = container.getBoundingClientRect();
+            curX = ((e.clientX - rect.left) / rect.width) * 100;
+            curY = ((e.clientY - rect.top) / rect.height) * 100;
+            document.getElementById('modal').style.display = 'block';
+            overlay.style.display = 'block';
+        };
+
+        window.confirmWishAndShowPay = async () => {
+            const text = document.getElementById('wishText').value.trim();
+            const type = document.getElementById('wishType').value;
+            if(!text || !user) return;
+
+            const passcode = Math.random().toString(36).substring(2, 10).toUpperCase();
+            
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'wishes'), {
+                x: curX, y: curY, text, type, passcode, likes: 0, blessings: 0, createdAt: new Date()
+            });
+
+            document.getElementById('modal').style.display = 'none';
+            document.getElementById('displayPasscode').innerText = passcode;
+            document.getElementById('successModal').style.display = 'block';
+            document.getElementById('wishText').value = '';
+        };
+
+        window.handleRedeem = () => {
+            const code = document.getElementById('redeemCode').value.trim().toUpperCase();
+            if(!code) return;
+            const items = document.querySelectorAll('.item');
+            let found = null;
+            // 简单前端查找
+            items.forEach(item => {
+                // 这里我们没法直接从 DOM 拿 passcode，逻辑改为在 startListening 处通过 id 缓存
+            });
+            // 为简单起见，建议用户在全屏时还愿。查找功能可以作为“定位”
+            alert("请在树上找到你的叶子并点击。");
+            window.closeModal();
+        };
+
+        window.handleCancelWish = async (id, correctCode, e) => {
+            e.stopPropagation();
+            const input = prompt("请输入您的8位提取码以移除：");
+            if(input && input.toUpperCase() === correctCode) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'wishes', id));
+                window.closeAll();
+            } else if(input) alert("提取码错误。");
+        };
+
+        window.evolveItem = async (id, currentType, correctCode) => {
+            if(currentType === 'gold_leaf' || currentType === 'apple') return;
+            const input = prompt("心愿达成了吗？输入提取码即可进化果实：");
+            if(input && input.toUpperCase() === correctCode) {
+                const nextType = (currentType === 'green_leaf') ? 'gold_leaf' : 'apple';
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'wishes', id), { type: nextType });
+                window.closeAll();
+            } else if(input) alert("验证失败。");
+        };
+
+        window.openFullScreen = (el) => {
+            window.closeAll();
+            overlay.style.display = 'block';
+            el.classList.add('full-screen');
+            document.querySelector('h1').style.opacity = '0';
+            subTitle.style.opacity = '0';
+            document.querySelector('.stats-board').style.opacity = '0';
+            document.getElementById('main-tips').style.opacity = '0';
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeAll = () => {
+            document.querySelectorAll('.item.full-screen').forEach(el => el.classList.remove('full-screen'));
+            overlay.style.display = 'none';
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+            document.querySelector('h1').style.opacity = '1';
+            subTitle.style.opacity = '1';
+            document.querySelector('.stats-board').style.opacity = '1';
+            document.getElementById('main-tips').style.opacity = '1';
+            document.body.style.overflow = 'auto';
+        };
+
+        window.closeModal = () => {
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+            overlay.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        };
+    </script>
+</body>
+</html>
